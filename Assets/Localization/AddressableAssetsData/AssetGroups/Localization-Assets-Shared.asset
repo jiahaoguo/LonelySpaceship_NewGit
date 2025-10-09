@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Localization-Assets-Shared
+  m_EditorClassIdentifier: 
+  m_GroupName: Localization-Assets-Shared
+  m_Data:
+    m_SerializedData: []
+  m_GUID: 91be51932260d6b4faa280d57d756a90
+  m_SerializeEntries:
+  - m_GUID: 402bb79c2f0f66b44af007a0226987a8
+    m_Address: Assets/Localization/StringTables/CoffeeMaker/CoffeeMakerHomeUI Shared
+      Data.asset
+    m_ReadOnly: 1
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 73dd8958d6b6f364fae84e0808dd4233
+    m_Address: Assets/Localization/Menu Labels Shared Data.asset
+    m_ReadOnly: 1
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8cc4f5e36f812cf4a837bc05160313f1
+    m_Address: Assets/Localization/StringTables/Meal/Meal0 Shared Data.asset
+    m_ReadOnly: 1
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d90a6c02ef3f0864c8dec82254adc29a
+    m_Address: Assets/Localization/CoffeeMaker/CoffeeMakerStart Shared Data.asset
+    m_ReadOnly: 1
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 1
+  m_Settings: {fileID: 11400000, guid: 61b6e77273c793a41a8b60925fe8ebf8, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: f5c23e5eb7480df49b7e1e07f21d95f9, type: 2}
+    - {fileID: 11400000, guid: 1856b6a3baf610c498a0881635a5089a, type: 2}

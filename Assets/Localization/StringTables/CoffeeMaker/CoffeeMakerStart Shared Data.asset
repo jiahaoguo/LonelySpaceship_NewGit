@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b11a58205ec3474ca216360e9fa74a8, type: 3}
+  m_Name: CoffeeMakerStart Shared Data
+  m_EditorClassIdentifier: 
+  m_TableCollectionName: CoffeeMakerStart
+  m_TableCollectionNameGuidString: d90a6c02ef3f0864c8dec82254adc29a
+  m_Entries:
+  - m_Id: 679146496000
+    m_Key: coffeeMakerStart.start
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4884296966144
+    m_Key: coffeeMakerStart.waterDrops
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5235251159040
+    m_Key: coffeeMakerStart.avoidHotCoffee
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5772138848256
+    m_Key: coffeeMakerStart.coffeeConvert
+    m_Metadata:
+      m_Items: []
+  m_Metadata:
+    m_Items: []
+  m_KeyGenerator:
+    rid: 9183136537348145160
+  references:
+    version: 2
+    RefIds:
+    - rid: 9183136537348145160
+      type: {class: DistributedUIDGenerator, ns: UnityEngine.Localization.Tables,
+        asm: Unity.Localization}
+      data:
+        m_CustomEpoch: 1759303335224
