@@ -1,13 +1,18 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class InventoryUIController : MonoBehaviour
 {
     [Header("References")]
     public InventoryManager manager;
-    [Tooltip("Parent Transform that contains all SlotUI objects.")]
+
+    [Tooltip("Parent Transform that contains the hotbar SlotUI objects (first line).")]
     public Transform hotbarParent;
 
+    [Tooltip("Parent Transform that contains all SlotUI objects for the full inventory (including the hotbar).")]
+    public Transform inventoryParent;
+
     private SlotUI[] hotbarSlots;
+    private SlotUI[] inventorySlots;
 
     private void Awake()
     {
@@ -15,6 +20,11 @@ public class InventoryUIController : MonoBehaviour
             hotbarSlots = hotbarParent.GetComponentsInChildren<SlotUI>(includeInactive: true);
         else
             Debug.LogWarning("InventoryUIController: Hotbar parent not assigned.");
+
+        if (inventoryParent != null)
+            inventorySlots = inventoryParent.GetComponentsInChildren<SlotUI>(includeInactive: true);
+        else
+            Debug.LogWarning("InventoryUIController: Inventory parent not assigned.");
     }
 
     private void OnEnable()
@@ -42,32 +52,48 @@ public class InventoryUIController : MonoBehaviour
 
     public void RefreshAll()
     {
-        if (manager == null || hotbarSlots == null)
+        if (manager == null)
             return;
 
-        for (int i = 0; i < hotbarSlots.Length; i++)
+        // --- Refresh Hotbar ---
+        if (hotbarSlots != null)
         {
-            InventorySlot slotData = i < manager.slots.Count ? manager.slots[i] : null;
-            hotbarSlots[i].SetSlot(slotData);
-
-            // --- Auto-bind JiahaoButton selection events ---
-            var jButton = hotbarSlots[i].GetComponent<JiahaoButton>();
-            if (jButton != null)
+            for (int i = 0; i < hotbarSlots.Length; i++)
             {
-                int index = i;
-
-                jButton.OnSelectEvent.RemoveAllListeners();
-                jButton.OnSelectEvent.AddListener(() =>
-                {
-                    InventoryUISelection.Instance?.OnSlotSelected(index);
-                });
-
-                jButton.OnDeselectEvent.RemoveAllListeners();
-                jButton.OnDeselectEvent.AddListener(() =>
-                {
-                    InventoryUISelection.Instance?.OnSlotDeselected(index);
-                });
+                InventorySlot slotData = i < manager.slots.Count ? manager.slots[i] : null;
+                hotbarSlots[i].SetSlot(slotData);
+                BindJiahaoButtonEvents(hotbarSlots[i], i);
             }
+        }
+
+        // --- Refresh Full Inventory (includes Hotbar as first row) ---
+        if (inventorySlots != null)
+        {
+            for (int i = 0; i < inventorySlots.Length; i++)
+            {
+                InventorySlot slotData = i < manager.slots.Count ? manager.slots[i] : null;
+                inventorySlots[i].SetSlot(slotData);
+                BindJiahaoButtonEvents(inventorySlots[i], i);
+            }
+        }
+    }
+
+    private void BindJiahaoButtonEvents(SlotUI slotUI, int index)
+    {
+        var jButton = slotUI.GetComponent<JiahaoButton>();
+        if (jButton != null)
+        {
+            jButton.OnSelectEvent.RemoveAllListeners();
+            jButton.OnSelectEvent.AddListener(() =>
+            {
+                InventoryUISelection.Instance?.OnSlotSelected(index);
+            });
+
+            jButton.OnDeselectEvent.RemoveAllListeners();
+            jButton.OnDeselectEvent.AddListener(() =>
+            {
+                InventoryUISelection.Instance?.OnSlotDeselected(index);
+            });
         }
     }
 }

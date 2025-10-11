@@ -82,16 +82,16 @@ public class SaveSystemManager : MonoBehaviour
             if (data != null)
             {
                 container.AddSection(agent.SectionName, data);
-                Debug.Log($"[SaveSystemManager] Saved section: {agent.SectionName}");
+                //Debug.Log($"[SaveSystemManager] Saved section: {agent.SectionName}");
             }
         }
 
         string json = JsonUtility.ToJson(container, true);
         File.WriteAllText(jsonPath, json);
-        Debug.Log($"💾 Manual Save created: {saveFolder}");
+        //Debug.Log($"💾 Manual Save created: {saveFolder}");
 
         ScreenCapture.CaptureScreenshot(screenshotPath);
-        Debug.Log($"📸 Screenshot saved: {screenshotPath}");
+        //Debug.Log($"📸 Screenshot saved: {screenshotPath}");
 
         // Mark as latest manual save
         SetLatestSave(saveFolder);
