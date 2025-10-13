@@ -11,6 +11,9 @@ public class InventoryUIController : MonoBehaviour
     [Tooltip("Parent Transform that contains all SlotUI objects for the full inventory (including the hotbar).")]
     public Transform inventoryParent;
 
+    [Header("Interaction")]
+    public InventoryCursorController cursorController; // assign in inspector if possible
+
     private SlotUI[] hotbarSlots;
     private SlotUI[] inventorySlots;
 
@@ -25,6 +28,9 @@ public class InventoryUIController : MonoBehaviour
             inventorySlots = inventoryParent.GetComponentsInChildren<SlotUI>(includeInactive: true);
         else
             Debug.LogWarning("InventoryUIController: Inventory parent not assigned.");
+
+        if (cursorController == null)
+            cursorController = FindObjectOfType<InventoryCursorController>();
     }
 
     private void OnEnable()
@@ -52,8 +58,7 @@ public class InventoryUIController : MonoBehaviour
 
     public void RefreshAll()
     {
-        if (manager == null)
-            return;
+        if (manager == null) return;
 
         // --- Refresh Hotbar ---
         if (hotbarSlots != null)
@@ -61,8 +66,14 @@ public class InventoryUIController : MonoBehaviour
             for (int i = 0; i < hotbarSlots.Length; i++)
             {
                 InventorySlot slotData = i < manager.slots.Count ? manager.slots[i] : null;
-                hotbarSlots[i].SetSlot(slotData);
-                BindJiahaoButtonEvents(hotbarSlots[i], i);
+                var slotUI = hotbarSlots[i];
+                slotUI.SetSlot(slotData);
+
+                // Bind selection visual/focus
+                BindJiahaoButtonEvents(slotUI, i);
+
+                // Bind click (pickup/place)
+                BindClick(slotUI, i);
             }
         }
 
@@ -72,10 +83,27 @@ public class InventoryUIController : MonoBehaviour
             for (int i = 0; i < inventorySlots.Length; i++)
             {
                 InventorySlot slotData = i < manager.slots.Count ? manager.slots[i] : null;
-                inventorySlots[i].SetSlot(slotData);
-                BindJiahaoButtonEvents(inventorySlots[i], i);
+                var slotUI = inventorySlots[i];
+                slotUI.SetSlot(slotData);
+
+                // Bind selection visual/focus
+                BindJiahaoButtonEvents(slotUI, i);
+
+                // Bind click (pickup/place)
+                BindClick(slotUI, i);
             }
         }
+    }
+
+    private void BindClick(SlotUI slotUI, int index)
+    {
+        slotUI.Initialize(index);
+        slotUI.OnSlotClicked.RemoveAllListeners();
+        slotUI.OnSlotClicked.AddListener((clickedIndex) =>
+        {
+            if (cursorController != null)
+                cursorController.OnSlotClicked(clickedIndex);
+        });
     }
 
     private void BindJiahaoButtonEvents(SlotUI slotUI, int index)

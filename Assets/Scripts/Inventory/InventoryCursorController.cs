@@ -1,3 +1,4 @@
+﻿using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -5,71 +6,148 @@ public class InventoryCursorController : MonoBehaviour
 {
     [Header("References")]
     public InventoryManager manager;
-    public Image cursorIcon; // a UI Image following the mouse
-    public Canvas canvas;
+    public Image cursorIcon;           // the icon following the mouse
+    public TextMeshProUGUI numberText; // quantity text under icon
+    public Canvas canvas;              // canvas for positioning
 
     private InventorySlot heldSlot;
     private bool isHoldingItem;
 
-    private void OnEnable()
+    private void Awake()
     {
-        InventoryUISelection.Instance.onSlotSelected.AddListener(OnSlotSelected);
-    }
-
-    private void OnDisable()
-    {
-        InventoryUISelection.Instance.onSlotSelected.RemoveListener(OnSlotSelected);
+        HideCursorCarry();
     }
 
     private void Update()
     {
-        if (isHoldingItem)
-        {
-            // Make the cursor icon follow the mouse
-            Vector2 pos;
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                canvas.transform as RectTransform,
-                Input.mousePosition,
-                canvas.worldCamera,
-                out pos);
+        if (!canvas) return;
+
+        // Make cursor icon follow mouse
+        Vector2 pos;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            canvas.transform as RectTransform,
+            Input.mousePosition,
+            canvas.worldCamera,
+            out pos);
+        if (cursorIcon != null)
             cursorIcon.rectTransform.anchoredPosition = pos;
-        }
     }
 
-    private void OnSlotSelected(int index)
+    /// <summary>
+    /// Called by InventoryUIController when a slot is clicked.
+    /// </summary>
+    public void OnSlotClicked(int index)
     {
-        // Only handle full-inventory clicks (ignore hotbar)
-        if (!IsFullInventorySlot(index))
+        if (manager == null || index < 0 || index >= manager.slots.Count)
             return;
 
-        InventorySlot slot = manager.slots[index];
+        var slot = manager.slots[index];
 
-        // --- Pick up ---
-        if (!isHoldingItem && !slot.IsEmpty)
+        // --- Pickup ---
+        if (!isHoldingItem)
         {
-            heldSlot = new InventorySlot(slot.item, slot.quantity);
-            slot.Clear();
-            cursorIcon.sprite = slot.item.icon;
-            cursorIcon.enabled = true;
-            isHoldingItem = true;
-            manager.onInventoryChanged?.Invoke();
+            if (!slot.IsEmpty)
+            {
+                heldSlot = new InventorySlot(slot.item, slot.quantity);
+                ShowCursorCarry(heldSlot);
+                slot.Clear();
+                isHoldingItem = true;
+                manager.onInventoryChanged?.Invoke();
+            }
+            return;
         }
+
         // --- Place down ---
-        else if (isHoldingItem)
+        var targetSlot = manager.slots[index];
+
+        // Case 1: same type, stackable → merge
+        if (!targetSlot.IsEmpty && targetSlot.item == heldSlot.item && targetSlot.item.stackable)
         {
-            // Place held item into clicked slot
-            manager.slots[index] = heldSlot;
-            cursorIcon.enabled = false;
-            isHoldingItem = false;
-            heldSlot = null;
-            manager.onInventoryChanged?.Invoke();
+            int total = targetSlot.quantity + heldSlot.quantity;
+            int maxStack = targetSlot.item.maxStack;
+
+            if (total <= maxStack)
+            {
+                targetSlot.quantity = total;
+                ClearCursorCarry();
+            }
+            else
+            {
+                targetSlot.quantity = maxStack;
+                heldSlot.quantity = total - maxStack;
+                UpdateCursorQuantity(heldSlot);
+            }
+        }
+        // Case 2: different type → swap
+        else if (!targetSlot.IsEmpty && targetSlot.item != heldSlot.item)
+        {
+            InventorySlot temp = new InventorySlot(targetSlot.item, targetSlot.quantity);
+            manager.slots[index] = new InventorySlot(heldSlot.item, heldSlot.quantity);
+
+            heldSlot = temp;
+            UpdateCursorCarry(heldSlot);
+        }
+        // Case 3: empty slot → place
+        else if (targetSlot.IsEmpty)
+        {
+            manager.slots[index] = new InventorySlot(heldSlot.item, heldSlot.quantity);
+            ClearCursorCarry();
+        }
+
+        manager.onInventoryChanged?.Invoke();
+    }
+
+    // --- Cursor UI helpers ---
+    private void ShowCursorCarry(InventorySlot data)
+    {
+        if (cursorIcon != null)
+        {
+            cursorIcon.enabled = true;
+            cursorIcon.sprite = data.item.icon;
+        }
+
+        UpdateCursorQuantity(data);
+    }
+
+    private void UpdateCursorCarry(InventorySlot data)
+    {
+        if (cursorIcon != null)
+            cursorIcon.sprite = data.item.icon;
+
+        UpdateCursorQuantity(data);
+        isHoldingItem = data != null && data.item != null && data.quantity > 0;
+    }
+
+    private void UpdateCursorQuantity(InventorySlot data)
+    {
+        if (numberText == null) return;
+
+        if (data.item.stackable && data.quantity > 1)
+        {
+            numberText.enabled = true;
+            numberText.text = data.quantity.ToString();
+        }
+        else
+        {
+            numberText.enabled = false;
+            numberText.text = "";
         }
     }
 
-    private bool IsFullInventorySlot(int index)
+    private void HideCursorCarry()
     {
-        // Assuming hotbar = first X slots, rest = inventory
-        int hotbarSize = 9;
-        return index >= hotbarSize;
+        if (cursorIcon != null) cursorIcon.enabled = false;
+        if (numberText != null)
+        {
+            numberText.enabled = false;
+            numberText.text = "";
+        }
+    }
+
+    private void ClearCursorCarry()
+    {
+        heldSlot = null;
+        isHoldingItem = false;
+        HideCursorCarry();
     }
 }
