@@ -1,70 +1,71 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.Events;
 
-[RequireComponent(typeof(Button))]
-public class SlotUI : MonoBehaviour
+public class SlotUI : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerDownHandler
 {
-    [Header("References")]
+    [Header("UI References")]
     public Image icon;
     public TextMeshProUGUI quantityText;
-    public Button button; // If not set, will auto-get in Awake
 
-    [System.Serializable] public class IntEvent : UnityEvent<int> { }
-    public IntEvent OnSlotClicked = new IntEvent();
+    [HideInInspector] public int slotIndex;
 
-    private int slotIndex = -1;
-    private InventorySlot slotData;
+    [System.Serializable]
+    public class SlotClickEvent : UnityEvent<int, PointerEventData.InputButton> { }
 
-    private void Awake()
+    public SlotClickEvent OnSlotPointerClicked = new SlotClickEvent();
+
+    private InventorySlot slot;
+
+    public void SetSlot(InventorySlot slot)
     {
-        if (button == null) button = GetComponent<Button>();
+        this.slot = slot;
     }
 
-    /// <summary>Called by UI controller to assign the global slot index and (re)bind click.</summary>
-    public void Initialize(int index)
+    public void SetIndex(int index)
     {
         slotIndex = index;
-
-        if (button != null)
-        {
-            button.onClick.RemoveAllListeners();
-            button.onClick.AddListener(() =>
-            {
-                if (slotIndex >= 0)
-                    OnSlotClicked.Invoke(slotIndex);
-            });
-        }
-    }
-
-    public void SetSlot(InventorySlot newSlot)
-    {
-        slotData = newSlot;
-        Refresh();
     }
 
     public void Refresh()
     {
-        if (slotData == null || slotData.IsEmpty)
+        if (slot == null || slot.item == null || slot.quantity <= 0)
         {
-            if (icon != null) icon.enabled = false;
-            if (quantityText != null) quantityText.text = "";
-            return;
+            icon.enabled = false;
+            quantityText.enabled = false;
         }
-
-        if (icon != null)
+        else
         {
             icon.enabled = true;
-            icon.sprite = slotData.item.icon;
-        }
+            icon.sprite = slot.item.icon;
 
-        if (quantityText != null)
-        {
-            // Show number only if stackable and >1
-            quantityText.text = (slotData.item.stackable && slotData.quantity > 1)
-                ? slotData.quantity.ToString()
-                : "";
+            if (slot.item.stackable && slot.quantity > 1)
+            {
+                quantityText.enabled = true;
+                quantityText.text = slot.quantity.ToString();
+            }
+            else
+            {
+                quantityText.enabled = false;
+                quantityText.text = "";
+            }
         }
+    }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        OnSlotPointerClicked.Invoke(slotIndex, eventData.button);
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        InventoryCursorController.Instance?.OnDragOverSlot(slotIndex);
+    }
+
+    public void OnPointerDown(PointerEventData eventData)
+    {
+        InventoryCursorController.Instance?.OnSlotPointerDown(slotIndex, eventData.button);
     }
 }

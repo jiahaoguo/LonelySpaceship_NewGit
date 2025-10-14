@@ -506,6 +506,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   icon: {fileID: 6415612140399943372}
   quantityText: {fileID: 3730644381604849533}
+  button: {fileID: 0}
+  OnSlotClicked:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!114 &4462989209774203038
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -563,7 +567,7 @@ MonoBehaviour:
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
-          m_BoolArgument: 1
+          m_BoolArgument: 0
         m_CallState: 2
   OnDeselectEvent:
     m_PersistentCalls:

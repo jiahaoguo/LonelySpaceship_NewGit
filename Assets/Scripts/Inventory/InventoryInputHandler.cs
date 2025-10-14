@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.InputSystem;
+using UnityEngine.Events;
 
 public class InventoryInputHandler : MonoBehaviour
 {
@@ -27,19 +27,20 @@ public class InventoryInputHandler : MonoBehaviour
         if (isOpen)
         {
             if (loadAnim != null)
-                loadAnim.LoadOut(); // graceful closing
+                loadAnim.LoadOut();
             else
-                inventoryUI.SetActive(false); // fallback if animation missing
+                inventoryUI.SetActive(false);
 
             onInventoryClosed?.Invoke();
         }
         else
         {
-            inventoryUI.SetActive(true); // triggers LoadIn automatically via OnEnable
+            inventoryUI.SetActive(true);
             onInventoryOpened?.Invoke();
         }
 
         isOpen = !isOpen;
+
         Cursor.visible = isOpen;
         Cursor.lockState = isOpen ? CursorLockMode.None : CursorLockMode.Locked;
     }

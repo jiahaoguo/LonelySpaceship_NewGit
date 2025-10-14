@@ -1,37 +1,38 @@
 using UnityEngine;
-using UnityEngine.Events;
+using UnityEngine.UI;
 
 public class InventoryUISelection : MonoBehaviour
 {
-    public static InventoryUISelection Instance { get; private set; }
+    public static InventoryUISelection Instance;
 
-    [Header("Selection State")]
-    public int currentSelectedIndex = -1;
-
-    [System.Serializable]
-    public class SlotSelectEvent : UnityEvent<int> { }
-    public SlotSelectEvent onSlotSelected;
+    public Image highlightImage;
+    private RectTransform rect;
 
     private void Awake()
     {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
         Instance = this;
+        rect = highlightImage.GetComponent<RectTransform>();
+        highlightImage.enabled = false;
     }
 
     public void OnSlotSelected(int index)
     {
-        currentSelectedIndex = index;
-        onSlotSelected?.Invoke(index);
-        Debug.Log($"[InventoryUISelection] Selected slot index: {index}");
+        if (index < 0) return;
+
+        SlotUI[] slots = FindObjectsOfType<SlotUI>();
+        foreach (var s in slots)
+        {
+            if (s.slotIndex == index)
+            {
+                highlightImage.enabled = true;
+                rect.position = s.GetComponent<RectTransform>().position;
+                break;
+            }
+        }
     }
 
-    public void OnSlotDeselected(int index)
+    public void Hide()
     {
-        if (currentSelectedIndex == index)
-            currentSelectedIndex = -1;
+        highlightImage.enabled = false;
     }
 }
