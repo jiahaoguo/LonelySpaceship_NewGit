@@ -2172,6 +2172,8 @@ MonoBehaviour:
   hotbarParent: {fileID: 4379009005817872445}
   inventoryParent: {fileID: 2783828765787825174}
   cursorController: {fileID: 0}
+  hotbarSlots: []
+  inventorySlots: []
 --- !u!114 &9017621870121704633
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2201,10 +2203,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 05f21457c16e98a43822c6d7242df929, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentSelectedIndex: -1
-  onSlotSelected:
-    m_PersistentCalls:
-      m_Calls: []
+  highlightImage: {fileID: 0}
 --- !u!114 &5278180970611599360
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2218,9 +2217,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   manager: {fileID: 6004048339254814376}
+  uiController: {fileID: 4254300846847032653}
   cursorIcon: {fileID: 5462422453581277731}
   numberText: {fileID: 9068150269433118044}
   canvas: {fileID: 783007842050641467}
+  doubleClickThreshold: 0.25
 --- !u!1 &1140597482219697418
 GameObject:
   m_ObjectHideFlags: 0
@@ -11478,6 +11479,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7551075574887322305}
+  - component: {fileID: 515434433670344392}
   m_Layer: 5
   m_Name: FullInventory
   m_TagString: Untagged
@@ -11506,6 +11508,48 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &515434433670344392
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3547320583728837681}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf6e9e02ce569624b95825e6b49d7da1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cascadeChildren: 1
+  loadInAnimations: []
+  loadOutAnimations:
+  - type: 0
+    duration: 0.1
+    curve:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 0
+      m_PostInfinity: 0
+      m_RotationOrder: 0
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 0, y: 0, z: 0}
+    alpha: 0
+    clip: {fileID: 0}
+    useOverrideDuration: 0
+    overrideDuration: 0
+  onLoadInStart:
+    m_PersistentCalls:
+      m_Calls: []
+  onLoadInFinish:
+    m_PersistentCalls:
+      m_Calls: []
+  onLoadOutStart:
+    m_PersistentCalls:
+      m_Calls: []
+  onLoadOutFinish:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &3579714512984515812
 GameObject:
   m_ObjectHideFlags: 0
@@ -20659,7 +20703,40 @@ MonoBehaviour:
     clip: {fileID: 0}
     useOverrideDuration: 0
     overrideDuration: 0
-  loadOutAnimations: []
+  loadOutAnimations:
+  - type: 0
+    duration: 0.1
+    curve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 2
+        outSlope: 2
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 0
+    position: {x: 0, y: -200, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 0, y: 0, z: 0}
+    alpha: 0
+    clip: {fileID: 0}
+    useOverrideDuration: 0
+    overrideDuration: 0
   onLoadInStart:
     m_PersistentCalls:
       m_Calls: []
@@ -28527,6 +28604,7 @@ GameObject:
   - component: {fileID: 8237344487731838266}
   - component: {fileID: 8409406339217549294}
   - component: {fileID: 1494648184159375808}
+  - component: {fileID: 6845075135287208677}
   m_Layer: 0
   m_Name: PlayerController
   m_TagString: Player
@@ -28753,6 +28831,22 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: 3355e32c-a67f-44f5-9287-89b886a7b7fd
     m_ActionName: Player/Interact[/Keyboard/f]
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 6845075135287208677}
+        m_TargetAssemblyTypeName: InventoryInputHandler, Assembly-CSharp
+        m_MethodName: OnToggleInventory
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: cfd3a63c-f89e-47fb-beb2-4948b151db12
+    m_ActionName: Player/New action
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player
@@ -28776,6 +28870,25 @@ MonoBehaviour:
     m_Bits: 256
   playerCamera: {fileID: 8524259887105498500}
   rayDistance: 5
+--- !u!114 &6845075135287208677
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8856791831027619366}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56dc903b54cc8ef4e8cbf3214e23b884, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  inventoryUI: {fileID: 3547320583728837681}
+  onInventoryOpened:
+    m_PersistentCalls:
+      m_Calls: []
+  onInventoryClosed:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &8938637368065737715
 GameObject:
   m_ObjectHideFlags: 0

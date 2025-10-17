@@ -61,11 +61,11 @@ public class SlotUI : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler,
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        InventoryCursorController.Instance?.OnDragOverSlot(slotIndex);
+        //InventoryCursorController.Instance?.OnDragOverSlot(slotIndex);
     }
 
     public void OnPointerDown(PointerEventData eventData)
     {
-        InventoryCursorController.Instance?.OnSlotPointerDown(slotIndex, eventData.button);
+        //InventoryCursorController.Instance?.OnSlotPointerDown(slotIndex, eventData.button);
     }
 }

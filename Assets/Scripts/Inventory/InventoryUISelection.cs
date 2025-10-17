@@ -11,8 +11,11 @@ public class InventoryUISelection : MonoBehaviour
     private void Awake()
     {
         Instance = this;
-        rect = highlightImage.GetComponent<RectTransform>();
-        highlightImage.enabled = false;
+        rect = highlightImage != null ? highlightImage.GetComponent<RectTransform>() : null;
+        if (highlightImage != null)
+        {
+            highlightImage.enabled = false;
+        }
     }
 
     public void OnSlotSelected(int index)
