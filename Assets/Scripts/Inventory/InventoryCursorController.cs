@@ -30,36 +30,30 @@ public class InventoryCursorController : MonoBehaviour
 
     private void Update()
     {
-        if (!canvas) return;
+        if (!canvas || cursorIcon == null) return;
 
-        // Follow mouse
-        if (cursorIcon)
-        {
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                canvas.transform as RectTransform,
-                Input.mousePosition,
-                canvas.worldCamera,
-                out Vector2 pos);
-            cursorIcon.rectTransform.anchoredPosition = pos;
-        }
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            canvas.transform as RectTransform,
+            Input.mousePosition,
+            canvas.worldCamera,
+            out Vector2 pos);
+        cursorIcon.rectTransform.anchoredPosition = pos;
     }
 
-    public bool IsHoldingItem => isHoldingItem;
-
-    // ============================================================
-    // MAIN CLICK HANDLING
-    // ============================================================
-
+    // ---------------- Main Click Handling ----------------
     public void OnSlotClicked(int index, PointerEventData.InputButton button)
     {
-        if (manager == null || index < 0 || index >= manager.slots.Count) return;
+        if (manager == null || index < 0 || index >= manager.slots.Count)
+            return;
 
-        bool rightClick = (button == PointerEventData.InputButton.Right);
-        bool leftClick = (button == PointerEventData.InputButton.Left);
         var slot = manager.slots[index];
         if (slot == null) return;
 
-        bool isDoubleClick = (index == lastClickedIndex && Time.time - lastClickTime <= doubleClickThreshold);
+        bool rightClick = (button == PointerEventData.InputButton.Right);
+        bool leftClick = (button == PointerEventData.InputButton.Left);
+
+        bool isDoubleClick = (index == lastClickedIndex &&
+                              Time.time - lastClickTime <= doubleClickThreshold);
         lastClickTime = Time.time;
         lastClickedIndex = index;
 
@@ -110,19 +104,11 @@ public class InventoryCursorController : MonoBehaviour
         var target = manager.slots[index];
         if (target == null) return;
 
-        if (rightClick)
-        {
-            HandleRightClick(target, index);
-            return;
-        }
-
-        HandleLeftClick(target, index);
+        if (rightClick) HandleRightClick(target, index);
+        else HandleLeftClick(target, index);
     }
 
-    // ============================================================
-    // LEFT & RIGHT CLICK LOGIC
-    // ============================================================
-
+    // ---------------- Helper Logic ----------------
     private void HandleRightClick(InventorySlot target, int index)
     {
         if (heldSlot == null) return;
@@ -133,7 +119,9 @@ public class InventoryCursorController : MonoBehaviour
             target.quantity = 1;
             heldSlot.quantity -= 1;
         }
-        else if (target.item == heldSlot.item && target.item.stackable && target.quantity < target.item.maxStack)
+        else if (target.item == heldSlot.item &&
+                 target.item.stackable &&
+                 target.quantity < target.item.maxStack)
         {
             target.quantity += 1;
             heldSlot.quantity -= 1;
@@ -145,13 +133,7 @@ public class InventoryCursorController : MonoBehaviour
             heldSlot = temp;
         }
 
-        if (heldSlot.quantity <= 0 || heldSlot.item == null)
-            ClearCursorCarry();
-        else
-            UpdateCursorQuantity(heldSlot);
-
-        manager.onInventoryChanged?.Invoke();
-        uiController?.RefreshSingleSlot(index);
+        FinalizeSlotChange(index);
     }
 
     private void HandleLeftClick(InventorySlot target, int index)
@@ -188,14 +170,19 @@ public class InventoryCursorController : MonoBehaviour
             ClearCursorCarry();
         }
 
+        FinalizeSlotChange(index);
+    }
+
+    private void FinalizeSlotChange(int index)
+    {
+        if (heldSlot != null && (heldSlot.quantity <= 0 || heldSlot.item == null))
+            ClearCursorCarry();
+
         manager.onInventoryChanged?.Invoke();
         uiController?.RefreshSingleSlot(index);
     }
 
-    // ============================================================
-    // UTILITY / CURSOR DISPLAY
-    // ============================================================
-
+    // ---------------- Utility / Cursor Display ----------------
     private void TryGatherAllToHand()
     {
         if (!isHoldingItem || heldSlot == null || heldSlot.item == null || !heldSlot.item.stackable)
@@ -207,22 +194,14 @@ public class InventoryCursorController : MonoBehaviour
         for (int i = 0; i < manager.slots.Count && current < max; i++)
         {
             var s = manager.slots[i];
-            if (s.IsEmpty) continue;
-
-            // ✅ Only gather from same item type
-            if (s.item != heldSlot.item) continue;
-
-            // ✅ Skip if that slot is already a max stack
+            if (s.IsEmpty || s.item != heldSlot.item) continue;
             if (s.quantity >= s.item.maxStack) continue;
 
-            // Move as much as needed to reach max
             int move = Mathf.Min(max - current, s.quantity);
             current += move;
             s.quantity -= move;
 
-            if (s.quantity <= 0)
-                s.Clear();
-
+            if (s.quantity <= 0) s.Clear();
             uiController?.RefreshSingleSlot(i);
         }
 
@@ -231,22 +210,18 @@ public class InventoryCursorController : MonoBehaviour
         manager.onInventoryChanged?.Invoke();
     }
 
-
     private void ShowCursorCarry(InventorySlot data)
     {
-        if (cursorIcon != null)
-        {
-            cursorIcon.enabled = true;
-            cursorIcon.sprite = data.item.icon;
-        }
+        if (!cursorIcon) return;
+        cursorIcon.enabled = true;
+        cursorIcon.sprite = data.item.icon;
         UpdateCursorQuantity(data);
     }
 
     private void UpdateCursorCarry(InventorySlot data)
     {
         if (data == null) { ClearCursorCarry(); return; }
-        if (cursorIcon != null)
-            cursorIcon.sprite = data.item.icon;
+        if (cursorIcon) cursorIcon.sprite = data.item.icon;
         UpdateCursorQuantity(data);
         isHoldingItem = data.item != null && data.quantity > 0;
     }
@@ -255,23 +230,14 @@ public class InventoryCursorController : MonoBehaviour
     {
         if (!numberText || data == null) return;
 
-        if (data.item.stackable && data.quantity > 1)
-        {
-            numberText.enabled = true;
-            numberText.text = data.quantity.ToString();
-        }
-        else
-        {
-            numberText.enabled = false;
-            numberText.text = "";
-        }
+        bool showNum = data.item.stackable && data.quantity > 1;
+        numberText.enabled = showNum;
+        numberText.text = showNum ? data.quantity.ToString() : "";
     }
 
     private void HideCursorCarry()
     {
-        if (cursorIcon)
-            cursorIcon.enabled = false;
-
+        if (cursorIcon) cursorIcon.enabled = false;
         if (numberText)
         {
             numberText.enabled = false;

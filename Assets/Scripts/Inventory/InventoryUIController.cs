@@ -8,6 +8,7 @@ public class InventoryUIController : MonoBehaviour
     public Transform hotbarParent;
     public Transform inventoryParent;
     public InventoryCursorController cursorController;
+    public HotbarSelector hotbarSelector;
 
     [HideInInspector] public SlotUI[] hotbarSlots;
     [HideInInspector] public SlotUI[] inventorySlots;
@@ -62,6 +63,7 @@ public class InventoryUIController : MonoBehaviour
         slotUI.OnSlotPointerClicked.RemoveAllListeners();
         slotUI.OnSlotPointerClicked.AddListener((clickedIndex, button) =>
         {
+            Debug.Log($"[InventoryUIController] Bound click event for slot {clickedIndex}");
             cursorController?.OnSlotClicked(clickedIndex, button);
         });
     }

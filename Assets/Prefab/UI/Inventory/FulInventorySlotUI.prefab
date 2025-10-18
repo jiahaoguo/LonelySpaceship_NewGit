@@ -506,8 +506,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   icon: {fileID: 6415612140399943372}
   quantityText: {fileID: 3730644381604849533}
-  button: {fileID: 0}
-  OnSlotClicked:
+  slotIndex: 0
+  OnSlotPointerClicked:
     m_PersistentCalls:
       m_Calls: []
 --- !u!114 &4462989209774203038
@@ -517,7 +517,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8331979963814883616}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2c48de1cb32f35d4389b23dff7020db6, type: 3}
   m_Name: 

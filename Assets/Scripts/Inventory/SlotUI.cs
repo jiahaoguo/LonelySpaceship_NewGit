@@ -1,33 +1,26 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using TMPro;
-using UnityEngine.Events;
 
-public class SlotUI : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerDownHandler
+public class SlotUI : MonoBehaviour, IPointerClickHandler
 {
     [Header("UI References")]
     public Image icon;
     public TextMeshProUGUI quantityText;
 
     [HideInInspector] public int slotIndex;
+    [HideInInspector] public bool isHotbarSlot;   // let controller mark this
+    public bool isSelected { get; private set; }  // 🔹 new flag
 
     [System.Serializable]
-    public class SlotClickEvent : UnityEvent<int, PointerEventData.InputButton> { }
-
+    public class SlotClickEvent : UnityEngine.Events.UnityEvent<int, PointerEventData.InputButton> { }
     public SlotClickEvent OnSlotPointerClicked = new SlotClickEvent();
 
     private InventorySlot slot;
 
-    public void SetSlot(InventorySlot slot)
-    {
-        this.slot = slot;
-    }
-
-    public void SetIndex(int index)
-    {
-        slotIndex = index;
-    }
+    public void SetSlot(InventorySlot slotData) => slot = slotData;
+    public void SetIndex(int index) => slotIndex = index;
 
     public void Refresh()
     {
@@ -40,7 +33,6 @@ public class SlotUI : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler,
         {
             icon.enabled = true;
             icon.sprite = slot.item.icon;
-
             if (slot.item.stackable && slot.quantity > 1)
             {
                 quantityText.enabled = true;
@@ -54,18 +46,16 @@ public class SlotUI : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler,
         }
     }
 
+    public void SetSelected(bool value)
+    {
+        isSelected = value;
+        Debug.Log("set selected");
+        if (isSelected)
+            InventoryUISelection.Instance?.OnSlotSelected(slotIndex);
+    }
+
     public void OnPointerClick(PointerEventData eventData)
     {
         OnSlotPointerClicked.Invoke(slotIndex, eventData.button);
-    }
-
-    public void OnPointerEnter(PointerEventData eventData)
-    {
-        //InventoryCursorController.Instance?.OnDragOverSlot(slotIndex);
-    }
-
-    public void OnPointerDown(PointerEventData eventData)
-    {
-        //InventoryCursorController.Instance?.OnSlotPointerDown(slotIndex, eventData.button);
     }
 }

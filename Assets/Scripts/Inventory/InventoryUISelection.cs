@@ -7,35 +7,42 @@ public class InventoryUISelection : MonoBehaviour
 
     public Image highlightImage;
     private RectTransform rect;
+    private int currentIndex = 0;
 
     private void Awake()
     {
         Instance = this;
-        rect = highlightImage != null ? highlightImage.GetComponent<RectTransform>() : null;
-        if (highlightImage != null)
-        {
-            highlightImage.enabled = false;
-        }
+        rect = highlightImage ? highlightImage.rectTransform : null;
+        if (highlightImage) highlightImage.enabled = false;
     }
 
     public void OnSlotSelected(int index)
     {
-        if (index < 0) return;
+        if (!highlightImage) return;
 
-        SlotUI[] slots = FindObjectsOfType<SlotUI>();
-        foreach (var s in slots)
+        currentIndex = index;
+
+        // find the SlotUI with that index inside active hotbar
+        InventoryUIController controller = FindObjectOfType<InventoryUIController>();
+        if (controller && controller.hotbarSlots != null &&
+            index >= 0 && index < controller.hotbarSlots.Length)
         {
-            if (s.slotIndex == index)
+            SlotUI slot = controller.hotbarSlots[index];
+            if (slot && slot.gameObject.activeInHierarchy)
             {
                 highlightImage.enabled = true;
-                rect.position = s.GetComponent<RectTransform>().position;
-                break;
+                rect.position = slot.GetComponent<RectTransform>().position;
+                return;
             }
         }
+
+        highlightImage.enabled = false;
     }
 
     public void Hide()
     {
-        highlightImage.enabled = false;
+        if (highlightImage) highlightImage.enabled = false;
     }
+
+    public int GetCurrentIndex() => currentIndex;
 }

@@ -17,6 +17,8 @@ public class HotbarSelector : MonoBehaviour
     private Selectable[] slotButtons;
     private InputAction selectSlotAction;
 
+    public int lastSelectedIndex;
+
     private void Awake()
     {
         if (inputActions != null)
@@ -38,6 +40,7 @@ public class HotbarSelector : MonoBehaviour
 
     private void OnEnable()
     {
+        EventSystem.current.SetSelectedGameObject(null);
         if (selectSlotAction != null)
         {
             selectSlotAction.performed += OnSelectSlot;
@@ -45,8 +48,10 @@ public class HotbarSelector : MonoBehaviour
         }
     }
 
+
     private void OnDisable()
     {
+
         if (selectSlotAction != null)
         {
             selectSlotAction.performed -= OnSelectSlot;
@@ -56,13 +61,15 @@ public class HotbarSelector : MonoBehaviour
 
     private void Update()
     {
+        Debug.Log("current selected object: " + EventSystem.current.currentSelectedGameObject);
         int index = GetPressedNumberKey();
         if (index >= 0 && slotButtons != null && index < slotButtons.Length)
-            SelectSlot(index);
+        SelectSlot(index);
     }
 
     private int GetPressedNumberKey()
     {
+
         var kb = Keyboard.current;
         if (kb == null) return -1;
 
