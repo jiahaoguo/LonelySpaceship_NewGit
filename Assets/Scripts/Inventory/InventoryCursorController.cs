@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using System.Collections.Generic;
 
 [DefaultExecutionOrder(-100)]
 public class InventoryCursorController : MonoBehaviour
@@ -21,6 +22,10 @@ public class InventoryCursorController : MonoBehaviour
     private float lastClickTime = 0f;
     private int lastClickedIndex = -1;
     [SerializeField] private float doubleClickThreshold = 0.25f;
+
+    // --- New fields ---
+    private int originalSlotIndex = -1;
+    private bool shouldReturnToOriginalSlot = false;
 
     private void Awake()
     {
@@ -79,6 +84,9 @@ public class InventoryCursorController : MonoBehaviour
         {
             if (!slot.IsEmpty)
             {
+                originalSlotIndex = index; // record where picked up
+                shouldReturnToOriginalSlot = true;
+
                 if (rightClick)
                 {
                     int half = Mathf.CeilToInt(slot.quantity / 2f);
@@ -134,6 +142,17 @@ public class InventoryCursorController : MonoBehaviour
         }
 
         FinalizeSlotChange(index);
+
+        // ✅ update cursor display immediately
+        if (heldSlot != null && isHoldingItem)
+            UpdateCursorQuantity(heldSlot);
+
+        // ✅ only clear restore flags if hand is now empty
+        if (!IsHoldingItem())
+        {
+            shouldReturnToOriginalSlot = false;
+            originalSlotIndex = -1;
+        }
     }
 
     private void HandleLeftClick(InventorySlot target, int index)
@@ -171,6 +190,13 @@ public class InventoryCursorController : MonoBehaviour
         }
 
         FinalizeSlotChange(index);
+
+        // ✅ only clear restore flags if hand is now empty
+        if (!IsHoldingItem())
+        {
+            shouldReturnToOriginalSlot = false;
+            originalSlotIndex = -1;
+        }
     }
 
     private void FinalizeSlotChange(int index)
@@ -191,24 +217,40 @@ public class InventoryCursorController : MonoBehaviour
         int max = heldSlot.item.maxStack;
         int current = heldSlot.quantity;
 
-        for (int i = 0; i < manager.slots.Count && current < max; i++)
+        // Collect same-type stacks that are NOT already maxed
+        List<(int index, InventorySlot slot)> sameTypeSlots = new List<(int, InventorySlot)>();
+        for (int i = 0; i < manager.slots.Count; i++)
         {
             var s = manager.slots[i];
             if (s.IsEmpty || s.item != heldSlot.item) continue;
-            if (s.quantity >= s.item.maxStack) continue;
+            if (s.quantity >= s.item.maxStack) continue; // ✅ skip full stacks
+            sameTypeSlots.Add((i, s));
+        }
+
+        // Sort by quantity ascending (smaller stacks first)
+        sameTypeSlots.Sort((a, b) => a.slot.quantity.CompareTo(b.slot.quantity));
+
+        // Merge from smallest to largest
+        foreach (var pair in sameTypeSlots)
+        {
+            if (current >= max) break;
+            var s = pair.slot;
+            if (s.quantity <= 0) continue;
 
             int move = Mathf.Min(max - current, s.quantity);
             current += move;
             s.quantity -= move;
-
             if (s.quantity <= 0) s.Clear();
-            uiController?.RefreshSingleSlot(i);
+
+            uiController?.RefreshSingleSlot(pair.index);
         }
 
         heldSlot.quantity = Mathf.Min(current, max);
         UpdateCursorQuantity(heldSlot);
         manager.onInventoryChanged?.Invoke();
     }
+
+
 
     private void ShowCursorCarry(InventorySlot data)
     {
@@ -250,5 +292,48 @@ public class InventoryCursorController : MonoBehaviour
         heldSlot = null;
         isHoldingItem = false;
         HideCursorCarry();
+    }
+
+    // ---------------- New API for restoration ----------------
+    public bool IsHoldingItem() => isHoldingItem && heldSlot != null && heldSlot.item != null;
+
+    public void ReturnHeldItemToOriginalSlot()
+    {
+        if (!IsHoldingItem() || !shouldReturnToOriginalSlot || originalSlotIndex < 0)
+            return;
+
+        if (originalSlotIndex < manager.slots.Count)
+        {
+            var slot = manager.slots[originalSlotIndex];
+            if (slot.IsEmpty)
+            {
+                manager.slots[originalSlotIndex] = new InventorySlot(heldSlot.item, heldSlot.quantity);
+            }
+            else if (slot.item == heldSlot.item && slot.item.stackable)
+            {
+                int total = slot.quantity + heldSlot.quantity;
+                int max = slot.item.maxStack;
+                slot.quantity = Mathf.Min(total, max);
+            }
+            else
+            {
+                // fallback: find empty slot
+                for (int i = 0; i < manager.slots.Count; i++)
+                {
+                    if (manager.slots[i].IsEmpty)
+                    {
+                        manager.slots[i] = new InventorySlot(heldSlot.item, heldSlot.quantity);
+                        break;
+                    }
+                }
+            }
+
+            manager.onInventoryChanged?.Invoke();
+            uiController?.RefreshAll();
+        }
+
+        ClearCursorCarry();
+        shouldReturnToOriginalSlot = false;
+        originalSlotIndex = -1;
     }
 }

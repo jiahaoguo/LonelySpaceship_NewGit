@@ -50,6 +50,14 @@ public class InventoryInputHandler : MonoBehaviour
         }
         else
         {
+            // --- Before closing: return held item if needed ---
+            if (InventoryCursorController.Instance != null)
+            {
+                var cursor = InventoryCursorController.Instance;
+                if (cursor.IsHoldingItem())
+                    cursor.ReturnHeldItemToOriginalSlot();
+            }
+
             // --- Closing inventory ---
             if (loadAnim) loadAnim.LoadOut();
             else inventoryUI.SetActive(false);
